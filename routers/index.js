@@ -22,8 +22,14 @@ const {
   updateCategory,
   updateColor,
   updateProduct,
+  updateColorImage,
+  updateProductImage,
 } = require("../controllers/update");
 const router = express.Router();
+
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.get("/all", getAllData);
 router.get("/category", getCategory);
@@ -45,5 +51,8 @@ router.delete("/product/:id", deleteProduct);
 router.put("/category/:id", updateCategory);
 router.put("/color/:id", updateColor);
 router.put("/product/:id", updateProduct);
+
+router.patch("/colorimage/:id", upload.single("photo"), updateColorImage);
+router.patch("/productimage/:id", upload.array("photos", 4), updateProductImage);
 
 module.exports = router;

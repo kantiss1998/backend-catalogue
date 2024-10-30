@@ -31,6 +31,7 @@ class CreateController {
   static async postColor(req, res, next) {
     try {
       const { name, hexCode, productId } = req.body;
+      console.log(req.body)
       let imgUrl = req.body.imgUrl || "-"
       const color = await Color.create({
         name,
