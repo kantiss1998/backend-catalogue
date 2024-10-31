@@ -2,7 +2,7 @@ name: backendcatalogue
 service:
   name: backend
   ports:
-    - port: 8080
+    - port: 8000
       http: /
   routes:
     - path: /
@@ -10,6 +10,6 @@ service:
   healthcheck:
     httpGet:
       path: /health
-      port: 8080
+      port: 8000
     initialDelaySeconds: 10
     periodSeconds: 30

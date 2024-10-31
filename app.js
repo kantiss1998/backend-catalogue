@@ -43,7 +43,7 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-const port = 8080
+const port = 8000
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server can be access in http://localhost:${port}`)
