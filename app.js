@@ -40,4 +40,8 @@ app.use(express.json());
 
 app.use(router);
 
-module.exports = app;
+const port = 5000
+
+app.listen(port, () => {
+  console.log(`Server can be access in http://localhost:${port}`)
+})
