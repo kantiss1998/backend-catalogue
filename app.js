@@ -9,9 +9,16 @@ const cors = require("cors");
 
 const router = require("./routers");
 const app = express();
-const bodyParser = require('body-parser')
+const bodyParser = require("body-parser");
 
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://cms.kantiss.com",
+  "http://cms.kantiss.com",
+  "https://catalogue.kantiss.com",
+  "http://catalogue.kantiss.com",
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -35,16 +42,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
-app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use(router);
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
 });
 
-const port = 8000
+const port = 8000;
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server can be access in http://localhost:${port}`)
-})
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server can be access in http://localhost:${port}`);
+});
