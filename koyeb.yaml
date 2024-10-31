@@ -1,0 +1,15 @@
+name: backendcatalogue
+service:
+  name: backend
+  ports:
+    - port: 8080
+      http: /
+  routes:
+    - path: /
+      public: true
+  healthcheck:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 30

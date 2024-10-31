@@ -31,6 +31,9 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+router.get("/", (req, res) => {
+  res.json({ message: "API is running" });
+});
 router.get("/all", getAllData);
 router.get("/category", getCategory);
 router.get("/product", getProduct);

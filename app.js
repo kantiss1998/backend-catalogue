@@ -39,9 +39,12 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.json());
 
 app.use(router);
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
-const port = 5000
+const port = 8080
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server can be access in http://localhost:${port}`)
 })
