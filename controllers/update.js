@@ -22,6 +22,55 @@
     return true;
   };
 
+  const uploadSingleImage = async (file) => {
+    try {
+      // Validate we have valid file data
+      if (!file || (!file.buffer && !file.data)) {
+        throw new Error('Invalid file data received');
+      }
+  
+      // Handle different buffer formats (Koyeb vs Local)
+      const imageBuffer = file.buffer || file.data;
+      
+      // Basic validation
+      if (!imageBuffer || imageBuffer.length === 0) {
+        throw new Error('Invalid image data');
+      }
+  
+      const response = await client.upload({
+        image: imageBuffer.toString("base64"),
+        type: "base64"
+      });
+  
+      console.log('Imgur upload response:', response);
+  
+      if (!response?.data?.link) {
+        throw new Error('Invalid response from Imgur');
+      }
+  
+      let imageUrl = response.data.link;
+  
+      // Handle various URL formats
+      if (typeof imageUrl === 'function' || !imageUrl) {
+        // Try alternative URL fields
+        imageUrl = response.data.url || 
+                  response.data.image?.url || 
+                  response.data.image;
+                  
+        if (!imageUrl) {
+          console.error('Full Imgur response:', JSON.stringify(response.data, null, 2));
+          throw new Error('Could not extract valid image URL from response');
+        }
+      }
+  
+      // Ensure URL starts with https
+      return imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`;
+    } catch (error) {
+      console.error('Upload error details:', error);
+      throw error;
+    }
+  };
+
   class UpdateController {
     static async updateCategory(req, res, next) {
       try {
@@ -35,7 +84,6 @@
         next(error);
       }
     }
-
     static async updateProduct(req, res, next) {
       try {
         console.log("masuk")
@@ -49,7 +97,6 @@
         console.log(error)
       }
     }
-
     static async updateColor(req, res, next) {
       try {
         const color = await Color.findByPk(req.params.id);
@@ -60,51 +107,6 @@
         res.json(updatedColor);
       } catch (error) {
         next(error);
-      }
-    }
-
-    static async uploadSingleImage(file) {
-      try {
-        // Validate we have valid file data
-        if (!file || (!file.buffer && !file.data)) {
-          throw new Error('Invalid file data received');
-        }
-  
-        // Handle different buffer formats (Koyeb vs Local)
-        const imageBuffer = file.buffer || file.data;
-        validateImageData(imageBuffer);
-  
-        const response = await client.upload({
-          image: imageBuffer.toString("base64"),
-          type: "base64"
-        });
-  
-        console.log('Imgur upload response:', response);
-  
-        if (!response?.data?.link) {
-          throw new Error('Invalid response from Imgur');
-        }
-  
-        let imageUrl = response.data.link;
-  
-        // Handle various URL formats
-        if (typeof imageUrl === 'function' || !imageUrl) {
-          // Try alternative URL fields
-          imageUrl = response.data.url || 
-                    response.data.image?.url || 
-                    response.data.image;
-                    
-          if (!imageUrl) {
-            console.error('Full Imgur response:', JSON.stringify(response.data, null, 2));
-            throw new Error('Could not extract valid image URL from response');
-          }
-        }
-  
-        // Ensure URL starts with https
-        return imageUrl.startsWith('http') ? imageUrl : `https://${imageUrl}`;
-      } catch (error) {
-        console.error('Upload error details:', error);
-        throw error;
       }
     }
   
@@ -127,7 +129,7 @@
         }
   
         try {
-          const imageUrl = await this.uploadSingleImage(uploadFile);
+          const imageUrl = await uploadSingleImage(uploadFile);
           
           console.log('Successfully got image URL:', imageUrl);
   
@@ -185,7 +187,7 @@
         // Upload multiple photos
         const uploadPromises = files.map(async (file) => {
           try {
-            return await this.uploadSingleImage(file);
+            return await uploadSingleImage(file);
           } catch (error) {
             console.error('Error uploading file:', error);
             return null;
