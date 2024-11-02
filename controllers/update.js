@@ -14,15 +14,17 @@ const retryWithBackoff = async (fn, maxRetries = 3) => {
       const isRateLimit =
         error.status === 429 || error.message.includes("over capacity");
 
-      if (i === maxRetries - 1) throw error;
+        if (i === maxRetries - 1) {
+          console.error(`All ${maxRetries} retry attempts failed`);
+          throw lastError;
+        }
 
-      // Calculate delay with exponential backoff
-      const delay = isRateLimit
-        ? Math.min(1000 * Math.pow(2, i), 10000) // Max 10 seconds for rate limit
-        : 1000 * (i + 1); // Linear backoff for other errors
-
-      console.log(`Attempt ${i + 1} failed, retrying in ${delay}ms...`);
-      await sleep(delay);
+       // More conservative backoff strategy
+       const baseDelay = isRateLimit ? 5000 : 2000; // Start with 5s for rate limits
+       const delay = Math.min(baseDelay * Math.pow(2, i), 30000); // Max 30s
+ 
+       console.log(`Attempt ${i + 1} failed, retrying in ${delay}ms...`);
+       await sleep(delay);
     }
   }
 };
@@ -42,6 +44,18 @@ const uploadSingleImage = async (file) => {
       throw new Error("Invalid image data");
     }
 
+    
+
+    // Add rate limiting check
+    const uploadTime = new Date().getTime();
+    if (uploadSingleImage.lastUploadTime) {
+      const timeSinceLastUpload = uploadTime - uploadSingleImage.lastUploadTime;
+      if (timeSinceLastUpload < 10000) { // 10 second minimum gap
+        await sleep(10000 - timeSinceLastUpload);
+      }
+    }
+    uploadSingleImage.lastUploadTime = uploadTime;
+    
     return retryWithBackoff(async () => {
       const response = await client.upload({
         image: imageBuffer.toString("base64"),
@@ -128,7 +142,7 @@ class UpdateController {
       next(error);
     }
   }
-  
+
   static async updateProductImage(req, res, next) {
     try {
       console.log("UpdateProductImage - Request files:", req.files);
